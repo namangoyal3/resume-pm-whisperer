@@ -2,41 +2,29 @@ import { useState } from 'react';
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Textarea } from "@/components/ui/textarea";
-import { Separator } from "@/components/ui/separator";
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
-import { Label } from "@/components/ui/label";
-import { Input } from "@/components/ui/input";
-import { Progress } from "@/components/ui/progress";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { useToast } from "@/components/ui/use-toast";
 import { FileUploader } from '@/components/FileUploader';
 import { ResumeScanner } from '@/components/ResumeScanner';
-import { RecommendationCard } from '@/components/RecommendationCard';
 import { KeywordAnalysis } from '@/components/KeywordAnalysis';
 import { GooglePMHeader } from '@/components/GooglePMHeader';
 import { ScoreCircle } from '@/components/ScoreCircle';
+import { analyzeResume } from '@/services/uploadService';
+import { Separator } from '@/components/ui/separator';
 import { FileText, Upload, CheckCircle, AlertTriangle, Info } from 'lucide-react';
-import { saveResumeAnalysis } from '@/services/googleSheets';
+import { RecommendationCard } from '@/components/RecommendationCard';
 
 const Index = () => {
   const { toast } = useToast();
   const [resumeFile, setResumeFile] = useState<File | null>(null);
   const [jobDescription, setJobDescription] = useState('');
   const [isAnalyzing, setIsAnalyzing] = useState(false);
-  const [analysisComplete, setAnalysisComplete] = useState(false);
   const [activeTab, setActiveTab] = useState('upload');
   
   const [atsScore, setAtsScore] = useState(0);
   const [keywordScore, setKeywordScore] = useState(0);
   const [contentScore, setContentScore] = useState(0);
   const [overallScore, setOverallScore] = useState(0);
-  
-  const handleFileUpload = (file: File) => {
-    setResumeFile(file);
-    toast({
-      title: "Resume Uploaded",
-      description: `${file.name} has been uploaded successfully.`,
-    });
-  };
 
   const handleAnalyzeResume = async () => {
     if (!resumeFile) {
@@ -60,32 +48,12 @@ const Index = () => {
     setIsAnalyzing(true);
     
     try {
-      // Simulate analysis with a timeout
-      await new Promise(resolve => setTimeout(resolve, 3000));
+      const result = await analyzeResume(resumeFile, jobDescription);
       
-      // Generate random scores between 50-95 for demonstration
-      const ats = Math.floor(Math.random() * 46) + 50;
-      const keyword = Math.floor(Math.random() * 46) + 50;
-      const content = Math.floor(Math.random() * 46) + 50;
-      const overall = Math.floor((ats + keyword + content) / 3);
-      
-      setAtsScore(ats);
-      setKeywordScore(keyword);
-      setContentScore(content);
-      setOverallScore(overall);
-
-      // Save analysis to Google Sheets
-      await saveResumeAnalysis({
-        timestamp: new Date().toISOString(),
-        fileName: resumeFile.name,
-        atsScore: ats,
-        keywordScore: keyword,
-        contentScore: content,
-        overallScore: overall
-      });
-      
-      setIsAnalyzing(false);
-      setAnalysisComplete(true);
+      setAtsScore(result.atsScore);
+      setKeywordScore(result.keywordScore);
+      setContentScore(result.contentScore);
+      setOverallScore(result.overallScore);
       setActiveTab('results');
       
       toast({
@@ -93,12 +61,13 @@ const Index = () => {
         description: "Review your detailed results in the dashboard.",
       });
     } catch (error) {
-      setIsAnalyzing(false);
       toast({
         title: "Error",
-        description: "Failed to save analysis results. Please try again.",
+        description: "Failed to analyze resume. Please try again.",
         variant: "destructive",
       });
+    } finally {
+      setIsAnalyzing(false);
     }
   };
 
@@ -107,6 +76,14 @@ const Index = () => {
       return name.substring(0, 22) + '...';
     }
     return name;
+  };
+
+  const handleFileUpload = (file: File) => {
+    setResumeFile(file);
+    toast({
+      title: "Resume Uploaded",
+      description: `${file.name} has been uploaded successfully.`,
+    });
   };
 
   return (
@@ -120,7 +97,7 @@ const Index = () => {
               <Upload className="w-4 h-4 mr-2" />
               Upload & Analyze
             </TabsTrigger>
-            <TabsTrigger value="results" disabled={!analysisComplete}>
+            <TabsTrigger value="results" disabled={atsScore === 0}>
               <FileText className="w-4 h-4 mr-2" />
               Results & Recommendations
             </TabsTrigger>
@@ -139,7 +116,7 @@ const Index = () => {
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
-                  <FileUploader onFileUpload={handleFileUpload} />
+                  <FileUploader onFileUpload={handleFileUpload} isUploading={isAnalyzing} />
                   
                   {resumeFile && (
                     <div className="mt-4 p-3 bg-blue-50 rounded-md flex items-center">
@@ -180,17 +157,10 @@ const Index = () => {
                 {isAnalyzing ? "Analyzing..." : "Analyze Resume"}
               </Button>
             </div>
-            
-            {isAnalyzing && (
-              <div className="text-center space-y-3">
-                <p className="text-sm text-gray-500">Analyzing your resume against ATS requirements...</p>
-                <Progress value={45} className="w-full max-w-md mx-auto" />
-              </div>
-            )}
           </TabsContent>
           
           <TabsContent value="results" className="space-y-6">
-            {analysisComplete && (
+            {atsScore > 0 && (
               <>
                 <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
                   <ScoreCircle 
@@ -270,7 +240,7 @@ const Index = () => {
                   <Button 
                     onClick={() => {
                       setActiveTab('upload');
-                      setAnalysisComplete(false);
+                      setAtsScore(0);
                       setResumeFile(null);
                       setJobDescription('');
                     }}
