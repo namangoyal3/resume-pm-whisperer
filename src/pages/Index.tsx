@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -16,6 +15,7 @@ import { KeywordAnalysis } from '@/components/KeywordAnalysis';
 import { GooglePMHeader } from '@/components/GooglePMHeader';
 import { ScoreCircle } from '@/components/ScoreCircle';
 import { FileText, Upload, CheckCircle, AlertTriangle, Info } from 'lucide-react';
+import { saveResumeAnalysis } from '@/services/googleSheets';
 
 const Index = () => {
   const { toast } = useToast();
@@ -38,7 +38,7 @@ const Index = () => {
     });
   };
 
-  const handleAnalyzeResume = () => {
+  const handleAnalyzeResume = async () => {
     if (!resumeFile) {
       toast({
         title: "Missing Resume",
@@ -59,8 +59,10 @@ const Index = () => {
     
     setIsAnalyzing(true);
     
-    // Simulate analysis with a timeout
-    setTimeout(() => {
+    try {
+      // Simulate analysis with a timeout
+      await new Promise(resolve => setTimeout(resolve, 3000));
+      
       // Generate random scores between 50-95 for demonstration
       const ats = Math.floor(Math.random() * 46) + 50;
       const keyword = Math.floor(Math.random() * 46) + 50;
@@ -71,6 +73,16 @@ const Index = () => {
       setKeywordScore(keyword);
       setContentScore(content);
       setOverallScore(overall);
+
+      // Save analysis to Google Sheets
+      await saveResumeAnalysis({
+        timestamp: new Date().toISOString(),
+        fileName: resumeFile.name,
+        atsScore: ats,
+        keywordScore: keyword,
+        contentScore: content,
+        overallScore: overall
+      });
       
       setIsAnalyzing(false);
       setAnalysisComplete(true);
@@ -80,7 +92,14 @@ const Index = () => {
         title: "Analysis Complete",
         description: "Review your detailed results in the dashboard.",
       });
-    }, 3000);
+    } catch (error) {
+      setIsAnalyzing(false);
+      toast({
+        title: "Error",
+        description: "Failed to save analysis results. Please try again.",
+        variant: "destructive",
+      });
+    }
   };
 
   const formatFilename = (name: string) => {
