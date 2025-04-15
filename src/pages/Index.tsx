@@ -1,12 +1,282 @@
-// Update this page (the content is just a fallback if you fail to update the page)
+
+import { useState } from 'react';
+import { Button } from "@/components/ui/button";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Textarea } from "@/components/ui/textarea";
+import { Separator } from "@/components/ui/separator";
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import { Label } from "@/components/ui/label";
+import { Input } from "@/components/ui/input";
+import { Progress } from "@/components/ui/progress";
+import { useToast } from "@/components/ui/use-toast";
+import { FileUploader } from '@/components/FileUploader';
+import { ResumeScanner } from '@/components/ResumeScanner';
+import { RecommendationCard } from '@/components/RecommendationCard';
+import { KeywordAnalysis } from '@/components/KeywordAnalysis';
+import { GooglePMHeader } from '@/components/GooglePMHeader';
+import { ScoreCircle } from '@/components/ScoreCircle';
+import { FileText, Upload, CheckCircle, AlertTriangle, Info } from 'lucide-react';
 
 const Index = () => {
+  const { toast } = useToast();
+  const [resumeFile, setResumeFile] = useState<File | null>(null);
+  const [jobDescription, setJobDescription] = useState('');
+  const [isAnalyzing, setIsAnalyzing] = useState(false);
+  const [analysisComplete, setAnalysisComplete] = useState(false);
+  const [activeTab, setActiveTab] = useState('upload');
+  
+  const [atsScore, setAtsScore] = useState(0);
+  const [keywordScore, setKeywordScore] = useState(0);
+  const [contentScore, setContentScore] = useState(0);
+  const [overallScore, setOverallScore] = useState(0);
+  
+  const handleFileUpload = (file: File) => {
+    setResumeFile(file);
+    toast({
+      title: "Resume Uploaded",
+      description: `${file.name} has been uploaded successfully.`,
+    });
+  };
+
+  const handleAnalyzeResume = () => {
+    if (!resumeFile) {
+      toast({
+        title: "Missing Resume",
+        description: "Please upload your resume before analyzing.",
+        variant: "destructive",
+      });
+      return;
+    }
+    
+    if (!jobDescription.trim()) {
+      toast({
+        title: "Missing Job Description",
+        description: "Please enter the job description for best results.",
+        variant: "destructive",
+      });
+      return;
+    }
+    
+    setIsAnalyzing(true);
+    
+    // Simulate analysis with a timeout
+    setTimeout(() => {
+      // Generate random scores between 50-95 for demonstration
+      const ats = Math.floor(Math.random() * 46) + 50;
+      const keyword = Math.floor(Math.random() * 46) + 50;
+      const content = Math.floor(Math.random() * 46) + 50;
+      const overall = Math.floor((ats + keyword + content) / 3);
+      
+      setAtsScore(ats);
+      setKeywordScore(keyword);
+      setContentScore(content);
+      setOverallScore(overall);
+      
+      setIsAnalyzing(false);
+      setAnalysisComplete(true);
+      setActiveTab('results');
+      
+      toast({
+        title: "Analysis Complete",
+        description: "Review your detailed results in the dashboard.",
+      });
+    }, 3000);
+  };
+
+  const formatFilename = (name: string) => {
+    if (name.length > 25) {
+      return name.substring(0, 22) + '...';
+    }
+    return name;
+  };
+
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-100">
-      <div className="text-center">
-        <h1 className="text-4xl font-bold mb-4">Welcome to Your Blank App</h1>
-        <p className="text-xl text-gray-600">Start building your amazing project here!</p>
-      </div>
+    <div className="min-h-screen bg-gradient-to-b from-white to-gray-50">
+      <GooglePMHeader />
+      
+      <main className="container mx-auto px-4 py-8">
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-8">
+          <TabsList className="grid w-full grid-cols-2">
+            <TabsTrigger value="upload" disabled={isAnalyzing}>
+              <Upload className="w-4 h-4 mr-2" />
+              Upload & Analyze
+            </TabsTrigger>
+            <TabsTrigger value="results" disabled={!analysisComplete}>
+              <FileText className="w-4 h-4 mr-2" />
+              Results & Recommendations
+            </TabsTrigger>
+          </TabsList>
+          
+          <TabsContent value="upload" className="space-y-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center">
+                    <FileText className="w-5 h-5 mr-2 text-google-blue" />
+                    Resume Upload
+                  </CardTitle>
+                  <CardDescription>
+                    Upload your resume in PDF or DOCX format
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <FileUploader onFileUpload={handleFileUpload} />
+                  
+                  {resumeFile && (
+                    <div className="mt-4 p-3 bg-blue-50 rounded-md flex items-center">
+                      <CheckCircle className="w-5 h-5 text-google-green mr-2" />
+                      <span className="text-sm">{formatFilename(resumeFile.name)}</span>
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+              
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center">
+                    <FileText className="w-5 h-5 mr-2 text-google-blue" />
+                    Job Description
+                  </CardTitle>
+                  <CardDescription>
+                    Paste the job description for keyword analysis
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <Textarea 
+                    placeholder="Paste the full job description here..."
+                    className="min-h-[200px]"
+                    value={jobDescription}
+                    onChange={(e) => setJobDescription(e.target.value)}
+                  />
+                </CardContent>
+              </Card>
+            </div>
+            
+            <div className="flex justify-center">
+              <Button 
+                onClick={handleAnalyzeResume} 
+                disabled={isAnalyzing || !resumeFile}
+                className="px-8 py-6 text-lg bg-google-blue hover:bg-blue-600"
+              >
+                {isAnalyzing ? "Analyzing..." : "Analyze Resume"}
+              </Button>
+            </div>
+            
+            {isAnalyzing && (
+              <div className="text-center space-y-3">
+                <p className="text-sm text-gray-500">Analyzing your resume against ATS requirements...</p>
+                <Progress value={45} className="w-full max-w-md mx-auto" />
+              </div>
+            )}
+          </TabsContent>
+          
+          <TabsContent value="results" className="space-y-6">
+            {analysisComplete && (
+              <>
+                <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                  <ScoreCircle 
+                    score={overallScore} 
+                    title="Overall Score" 
+                    description="Combined performance score" 
+                    mainColor="bg-google-blue"
+                  />
+                  <ScoreCircle 
+                    score={atsScore} 
+                    title="ATS Compatibility" 
+                    description="How well your resume works with ATS" 
+                    mainColor="bg-google-red"
+                  />
+                  <ScoreCircle 
+                    score={keywordScore} 
+                    title="Keyword Match" 
+                    description="Keyword alignment with job description" 
+                    mainColor="bg-google-yellow"
+                  />
+                  <ScoreCircle 
+                    score={contentScore} 
+                    title="Content Quality" 
+                    description="Overall resume content effectiveness" 
+                    mainColor="bg-google-green"
+                  />
+                </div>
+                
+                <Separator />
+                
+                <div className="space-y-6">
+                  <h2 className="text-2xl font-bold text-gray-800">Detailed Analysis & Recommendations</h2>
+                  
+                  <ResumeScanner atsScore={atsScore} />
+                  
+                  <KeywordAnalysis keywordScore={keywordScore} jobDescription={jobDescription} />
+                  
+                  <Card>
+                    <CardHeader>
+                      <CardTitle className="flex items-center">
+                        <Info className="w-5 h-5 mr-2 text-google-green" />
+                        Content Quality Assessment
+                      </CardTitle>
+                      <CardDescription>
+                        How effective is your resume content for recruiters?
+                      </CardDescription>
+                    </CardHeader>
+                    <CardContent className="space-y-4">
+                      <RecommendationCard
+                        icon={<AlertTriangle className="w-5 h-5 text-google-yellow" />}
+                        title="Achievement Quantification"
+                        description="Your resume needs more quantified achievements. Add metrics, percentages, and specific outcomes."
+                        recommendation="Convert statements like 'Improved team productivity' to 'Increased team productivity by 27% over 6 months, resulting in $120K cost savings'."
+                        score={contentScore < 70 ? "Low" : contentScore < 85 ? "Medium" : "High"}
+                      />
+                      
+                      <RecommendationCard
+                        icon={<AlertTriangle className="w-5 h-5 text-google-red" />}
+                        title="Action Verb Usage"
+                        description="Your resume uses too many passive phrases and weak verbs."
+                        recommendation="Replace phrases like 'Responsible for managing' with strong action verbs like 'Led', 'Implemented', or 'Orchestrated'."
+                        score={contentScore < 75 ? "Low" : contentScore < 90 ? "Medium" : "High"}
+                      />
+                      
+                      <RecommendationCard
+                        icon={<Info className="w-5 h-5 text-google-green" />}
+                        title="Section Organization"
+                        description="Your resume sections follow standard conventions, making it easy for both ATS and recruiters to parse."
+                        recommendation="Maintain clear section headers like 'Work Experience', 'Education', and 'Skills'."
+                        score="High"
+                      />
+                    </CardContent>
+                  </Card>
+                </div>
+                
+                <div className="flex justify-center mt-8">
+                  <Button 
+                    onClick={() => {
+                      setActiveTab('upload');
+                      setAnalysisComplete(false);
+                      setResumeFile(null);
+                      setJobDescription('');
+                    }}
+                    variant="outline" 
+                    className="mr-4"
+                  >
+                    Upload New Resume
+                  </Button>
+                  <Button 
+                    className="bg-google-blue hover:bg-blue-600"
+                    onClick={() => {
+                      toast({
+                        title: "Recommendations Saved",
+                        description: "Your recommendations have been saved successfully."
+                      });
+                    }}
+                  >
+                    Save Recommendations
+                  </Button>
+                </div>
+              </>
+            )}
+          </TabsContent>
+        </Tabs>
+      </main>
     </div>
   );
 };
