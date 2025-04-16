@@ -31,33 +31,33 @@ export const saveResumeAnalysis = async (data: ResumeSubmission) => {
     // Log the data being sent to help with debugging
     console.log('Sending data to Google Sheets:', data);
     
-    // Instead of using fetch directly, we'll create a FormData object and submit it via a hidden iframe
-    // This is a common workaround for CORS issues with Google Apps Script
-    const form = document.createElement('form');
-    form.method = 'POST';
-    form.action = GOOGLE_SHEETS_WEB_APP_URL;
-    form.target = '_blank'; // This will open in a new tab, but we'll hide it
-    form.style.display = 'none';
+    // Create a form data object to submit via hidden iframe
+    const formData = new FormData();
+    formData.append('data', JSON.stringify(data));
     
-    // Convert our JSON data to a single form field
-    const input = document.createElement('input');
-    input.type = 'hidden';
-    input.name = 'data';
-    input.value = JSON.stringify(data);
-    form.appendChild(input);
+    // Use fetch API to send the data in the background
+    const response = await fetch(GOOGLE_SHEETS_WEB_APP_URL, {
+      method: 'POST',
+      body: formData,
+      mode: 'no-cors' // Use no-cors mode to avoid CORS issues
+    });
     
-    // Add the form to the body
-    document.body.appendChild(form);
+    console.log('Google Sheets submission completed');
     
-    // Submit the form
-    form.submit();
-    
-    // Clean up after submission
-    setTimeout(() => {
-      document.body.removeChild(form);
-    }, 1000);
-    
-    console.log('Google Sheets submission initiated via form');
+    // Always send email feedback regardless of user choice
+    if (data.email) {
+      await sendEmailFeedback({
+        email: data.email,
+        name: data.name || '',
+        atsScore: data.atsScore,
+        keywordScore: data.keywordScore,
+        contentScore: data.contentScore,
+        overallScore: data.overallScore,
+        resumeFileName: data.fileName,
+        jobTitle: data.jobTitle,
+        expert: data.expert || ''
+      });
+    }
     
     // Return a successful result
     return { success: true };
@@ -80,35 +80,19 @@ export const sendEmailFeedback = async (data: {
   expert?: string;
 }) => {
   try {
-    // We'll use the same Google Sheets Web App URL since it can handle the email sending
-    // on the server side via Google Apps Script
+    // Using fetch to send email data in the background
     console.log('Sending email feedback request:', data);
     
-    const form = document.createElement('form');
-    form.method = 'POST';
-    form.action = GOOGLE_SHEETS_WEB_APP_URL;
-    form.target = '_blank';
-    form.style.display = 'none';
+    const formData = new FormData();
+    formData.append('emailData', JSON.stringify(data));
     
-    // Add a special parameter to indicate this is an email request
-    const inputData = document.createElement('input');
-    inputData.type = 'hidden';
-    inputData.name = 'emailData';
-    inputData.value = JSON.stringify(data);
-    form.appendChild(inputData);
+    await fetch(GOOGLE_SHEETS_WEB_APP_URL, {
+      method: 'POST',
+      body: formData,
+      mode: 'no-cors' // Use no-cors mode to avoid CORS issues
+    });
     
-    // Add the form to the body
-    document.body.appendChild(form);
-    
-    // Submit the form
-    form.submit();
-    
-    // Clean up after submission
-    setTimeout(() => {
-      document.body.removeChild(form);
-    }, 1000);
-    
-    console.log('Email feedback request initiated');
+    console.log('Email feedback request completed');
     
     return { success: true };
   } catch (error) {

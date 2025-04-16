@@ -11,10 +11,9 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Separator } from '@/components/ui/separator';
 import { Textarea } from '@/components/ui/textarea';
 import { Progress } from '@/components/ui/progress';
-import { ArrowRight, Shield, Loader2, Mail } from 'lucide-react';
-import { saveResumeAnalysis, sendEmailFeedback } from '@/services/googleSheets';
+import { ArrowRight, Shield, Loader2, Mail, CheckCircle } from 'lucide-react';
+import { saveResumeAnalysis } from '@/services/googleSheets';
 import { useToast } from "@/components/ui/use-toast";
-import { Checkbox } from "@/components/ui/checkbox";
 
 const formSchema = z.object({
   name: z.string().min(2, { message: "Name must be at least 2 characters." }),
@@ -26,7 +25,6 @@ const formSchema = z.object({
   jobSearchTimeline: z.enum(["active", "1month", "3months", "6months", "exploring"]),
   budget: z.enum(["under500", "500to1000", "1000to2000", "over2000", "unsure"]),
   additionalInfo: z.string().optional(),
-  sendEmailFeedback: z.boolean().default(false),
 });
 
 interface LeadFormProps {
@@ -65,7 +63,6 @@ export const LeadForm: React.FC<LeadFormProps> = ({
       jobSearchTimeline: "exploring",
       budget: "unsure",
       additionalInfo: "",
-      sendEmailFeedback: false,
     },
   });
 
@@ -90,42 +87,21 @@ export const LeadForm: React.FC<LeadFormProps> = ({
         budget: values.budget,
         additionalInfo: values.additionalInfo || "Not provided",
         expert: selectedExpert,
-        sendEmailFeedback: values.sendEmailFeedback
+        sendEmailFeedback: true // Always send email feedback
       };
       
       toast({
         title: "Submitting your information...",
-        description: "Please wait while we save your profile.",
+        description: "Please wait while we process your submission.",
       });
       
       const result = await saveResumeAnalysis(submissionData);
       
-      // If requested, also send email feedback
-      if (values.sendEmailFeedback) {
-        toast({
-          title: "Preparing Email Feedback",
-          description: "We're also sending your ATS feedback to your email.",
-        });
-        
-        await sendEmailFeedback({
-          email: values.email,
-          name: values.name,
-          atsScore: atsScore,
-          keywordScore: keywordScore,
-          contentScore: contentScore,
-          overallScore: overallScore,
-          resumeFileName: resumeFileName || "resume.pdf",
-          jobTitle: values.currentRole,
-          expert: selectedExpert
-        });
-      }
-      
       if (result.success) {
         toast({
-          title: "Profile Submitted Successfully",
-          description: values.sendEmailFeedback 
-            ? "Your information has been saved and the report will be emailed to you. Unlocking your full analysis..."
-            : "Your information has been saved. Unlocking your full analysis...",
+          title: "Success!",
+          description: "Your analysis is complete. Check your email for detailed feedback.",
+          variant: "default",
         });
         
         onSubmit(values);
@@ -136,8 +112,8 @@ export const LeadForm: React.FC<LeadFormProps> = ({
       console.error('Error submitting form:', error);
       
       toast({
-        title: "Submission In Progress",
-        description: "We're processing your submission. Please continue to your analysis.",
+        title: "Processing Complete",
+        description: "Your analysis is ready. Proceeding to results...",
       });
       
       onSubmit(values);
@@ -149,7 +125,7 @@ export const LeadForm: React.FC<LeadFormProps> = ({
   return (
     <div className="space-y-8">
       <div className="text-center max-w-3xl mx-auto mb-6">
-        <h1 className="text-3xl font-bold mb-3">Complete Your Profile</h1>
+        <h1 className="text-3xl font-bold mb-3 text-google-blue">Complete Your Profile</h1>
         <p className="text-gray-600">
           Your information helps our experts provide personalized feedback tailored to your career goals.
         </p>
@@ -158,7 +134,7 @@ export const LeadForm: React.FC<LeadFormProps> = ({
       <div className="flex justify-center mb-8">
         <div className="w-full max-w-xl">
           <div className="relative">
-            <Progress value={50} className="h-2" />
+            <Progress value={50} className="h-2 bg-gray-200" />
             <div className="mt-2 flex justify-between text-sm text-gray-500">
               <span>Resume Upload</span>
               <span>Profile Completion</span>
@@ -168,14 +144,14 @@ export const LeadForm: React.FC<LeadFormProps> = ({
         </div>
       </div>
       
-      <Card className="max-w-3xl mx-auto">
-        <CardHeader>
-          <CardTitle>Contact Information</CardTitle>
+      <Card className="max-w-3xl mx-auto border-google-blue/20 shadow-lg">
+        <CardHeader className="bg-gradient-to-r from-blue-50 to-white border-b">
+          <CardTitle className="text-google-blue">Contact Information</CardTitle>
           <CardDescription>
             Help us understand your background and career goals
           </CardDescription>
         </CardHeader>
-        <CardContent>
+        <CardContent className="pt-6">
           <Form {...form}>
             <form onSubmit={form.handleSubmit(handleFormSubmit)} className="space-y-6">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -186,7 +162,7 @@ export const LeadForm: React.FC<LeadFormProps> = ({
                     <FormItem>
                       <FormLabel>Full Name*</FormLabel>
                       <FormControl>
-                        <Input placeholder="John Smith" {...field} />
+                        <Input placeholder="John Smith" {...field} className="border-google-blue/30 focus-visible:ring-google-blue" />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -200,7 +176,7 @@ export const LeadForm: React.FC<LeadFormProps> = ({
                     <FormItem>
                       <FormLabel>Email Address*</FormLabel>
                       <FormControl>
-                        <Input placeholder="johnsmith@example.com" {...field} />
+                        <Input placeholder="johnsmith@example.com" {...field} className="border-google-blue/30 focus-visible:ring-google-blue" />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -216,7 +192,7 @@ export const LeadForm: React.FC<LeadFormProps> = ({
                     <FormItem>
                       <FormLabel>Phone Number*</FormLabel>
                       <FormControl>
-                        <Input placeholder="+1 (555) 123-4567" {...field} />
+                        <Input placeholder="+1 (555) 123-4567" {...field} className="border-google-blue/30 focus-visible:ring-google-blue" />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -230,7 +206,7 @@ export const LeadForm: React.FC<LeadFormProps> = ({
                     <FormItem>
                       <FormLabel>LinkedIn URL (Optional)</FormLabel>
                       <FormControl>
-                        <Input placeholder="linkedin.com/in/johnsmith" {...field} />
+                        <Input placeholder="linkedin.com/in/johnsmith" {...field} className="border-google-blue/30 focus-visible:ring-google-blue" />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -238,7 +214,7 @@ export const LeadForm: React.FC<LeadFormProps> = ({
                 />
               </div>
               
-              <Separator />
+              <Separator className="bg-google-blue/20" />
               
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <FormField
@@ -248,7 +224,7 @@ export const LeadForm: React.FC<LeadFormProps> = ({
                     <FormItem>
                       <FormLabel>Current Role*</FormLabel>
                       <FormControl>
-                        <Input placeholder="Product Manager" {...field} />
+                        <Input placeholder="Product Manager" {...field} className="border-google-blue/30 focus-visible:ring-google-blue" />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -262,7 +238,7 @@ export const LeadForm: React.FC<LeadFormProps> = ({
                     <FormItem>
                       <FormLabel>Target Companies*</FormLabel>
                       <FormControl>
-                        <Input placeholder="Google, Amazon, Netflix" {...field} />
+                        <Input placeholder="Google, Amazon, Netflix" {...field} className="border-google-blue/30 focus-visible:ring-google-blue" />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -279,7 +255,7 @@ export const LeadForm: React.FC<LeadFormProps> = ({
                       <FormLabel>Job Search Timeline*</FormLabel>
                       <Select onValueChange={field.onChange} defaultValue={field.value}>
                         <FormControl>
-                          <SelectTrigger>
+                          <SelectTrigger className="border-google-blue/30 focus-visible:ring-google-blue">
                             <SelectValue placeholder="Select your timeline" />
                           </SelectTrigger>
                         </FormControl>
@@ -304,7 +280,7 @@ export const LeadForm: React.FC<LeadFormProps> = ({
                       <FormLabel>Budget for Career Services*</FormLabel>
                       <Select onValueChange={field.onChange} defaultValue={field.value}>
                         <FormControl>
-                          <SelectTrigger>
+                          <SelectTrigger className="border-google-blue/30 focus-visible:ring-google-blue">
                             <SelectValue placeholder="Select your budget" />
                           </SelectTrigger>
                         </FormControl>
@@ -331,7 +307,7 @@ export const LeadForm: React.FC<LeadFormProps> = ({
                     <FormControl>
                       <Textarea
                         placeholder="Any specific career challenges or goals you'd like the expert to know about"
-                        className="min-h-[100px]"
+                        className="min-h-[100px] border-google-blue/30 focus-visible:ring-google-blue"
                         {...field}
                       />
                     </FormControl>
@@ -340,31 +316,14 @@ export const LeadForm: React.FC<LeadFormProps> = ({
                 )}
               />
               
-              <FormField
-                control={form.control}
-                name="sendEmailFeedback"
-                render={({ field }) => (
-                  <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-md border p-4">
-                    <FormControl>
-                      <Checkbox
-                        checked={field.value}
-                        onCheckedChange={field.onChange}
-                      />
-                    </FormControl>
-                    <div className="space-y-1 leading-none">
-                      <FormLabel className="flex items-center">
-                        <Mail className="h-4 w-4 mr-2 text-google-blue" />
-                        Email me my ATS feedback results
-                      </FormLabel>
-                      <FormDescription>
-                        We'll send a detailed report of your resume analysis to your email address.
-                      </FormDescription>
-                    </div>
-                  </FormItem>
-                )}
-              />
+              <div className="flex items-center space-x-2 p-4 bg-blue-50 rounded-md border border-google-blue/20">
+                <Mail className="h-5 w-5 text-google-blue" />
+                <p className="text-sm text-gray-600">
+                  Your ATS feedback report will be automatically emailed to your provided email address.
+                </p>
+              </div>
               
-              <div className="flex items-center space-x-2 p-4 bg-blue-50 rounded-md">
+              <div className="flex items-center space-x-2 p-4 bg-gray-50 rounded-md border border-gray-200">
                 <Shield className="h-5 w-5 text-google-blue" />
                 <p className="text-sm text-gray-600">
                   We respect your privacy. Your information will only be used to provide personalized feedback. See our <a href="#" className="text-google-blue hover:underline">Privacy Policy</a>.
@@ -374,18 +333,18 @@ export const LeadForm: React.FC<LeadFormProps> = ({
               <div className="flex justify-center">
                 <Button 
                   type="submit" 
-                  className="px-8 py-6 text-lg bg-google-blue hover:bg-blue-600"
+                  className="px-8 py-6 text-lg bg-google-green hover:bg-green-600 transition-all duration-300 shadow-md"
                   disabled={isSubmitting}
                 >
                   {isSubmitting ? (
                     <>
                       <Loader2 className="mr-2 h-5 w-5 animate-spin" />
-                      Submitting...
+                      Processing...
                     </>
                   ) : (
                     <>
-                      Unlock Full Expert Analysis
-                      <ArrowRight className="ml-2 h-5 w-5" />
+                      I am done!
+                      <CheckCircle className="ml-2 h-5 w-5" />
                     </>
                   )}
                 </Button>
