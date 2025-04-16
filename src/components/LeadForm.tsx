@@ -343,7 +343,7 @@ export const LeadForm: React.FC<LeadFormProps> = ({
                     </>
                   ) : (
                     <>
-                      I am done!
+                      Get the feedback
                       <CheckCircle className="ml-2 h-5 w-5" />
                     </>
                   )}
