@@ -2,7 +2,7 @@
 import { createClient } from '@supabase/supabase-js';
 
 // Google Sheets Web App URL from deployment
-const GOOGLE_SHEETS_WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbwEhjFJn-JQzea70WE0TGP0zzPQUcPEihKV7qUc8Tl2ofeBxNR7yDPfmzaXIH2yyaVULg/exec';
+const GOOGLE_SHEETS_WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbwqhELI1OBpnhBvRklGnomrUYe8c-A9J3ym1dA7_N4X2Wa9vd3izFsFspbD5MMxeNSWzA/exec';
 
 export interface ResumeSubmission {
   timestamp: string;
@@ -67,7 +67,7 @@ export const saveResumeAnalysis = async (data: ResumeSubmission) => {
   }
 };
 
-// New function to send ATS feedback via email
+// Function to send ATS feedback via email
 export const sendEmailFeedback = async (data: {
   email: string;
   name: string;
