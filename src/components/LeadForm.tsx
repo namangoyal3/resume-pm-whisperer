@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -69,8 +68,7 @@ export const LeadForm: React.FC<LeadFormProps> = ({
   const handleFormSubmit = async (values: z.infer<typeof formSchema>) => {
     setIsSubmitting(true);
     try {
-      // First, save form data to Google Sheets with all the scores
-      await saveResumeAnalysis({
+      const submissionData = {
         timestamp: new Date().toISOString(),
         fileName: resumeFileName || "resume.pdf",
         atsScore: atsScore, 
@@ -78,7 +76,6 @@ export const LeadForm: React.FC<LeadFormProps> = ({
         contentScore: contentScore,
         overallScore: overallScore,
         jobTitle: values.currentRole,
-        // Add lead information
         name: values.name,
         email: values.email,
         phone: values.phone,
@@ -89,21 +86,34 @@ export const LeadForm: React.FC<LeadFormProps> = ({
         budget: values.budget,
         additionalInfo: values.additionalInfo || "Not provided",
         expert: selectedExpert
-      });
+      };
       
       toast({
-        title: "Profile Submitted Successfully",
-        description: "Your information has been saved. Unlocking your full analysis...",
+        title: "Submitting your information...",
+        description: "Please wait while we save your profile.",
+      });
+      
+      const result = await saveResumeAnalysis(submissionData);
+      
+      if (result.success) {
+        toast({
+          title: "Profile Submitted Successfully",
+          description: "Your information has been saved. Unlocking your full analysis...",
+        });
+        
+        onSubmit(values);
+      } else {
+        throw new Error("Failed to save data");
+      }
+    } catch (error) {
+      console.error('Error submitting form:', error);
+      
+      toast({
+        title: "Submission In Progress",
+        description: "We're processing your submission. Please continue to your analysis.",
       });
       
       onSubmit(values);
-    } catch (error) {
-      console.error('Error submitting form:', error);
-      toast({
-        title: "Submission Error",
-        description: "There was an error submitting your information. Please try again.",
-        variant: "destructive"
-      });
     } finally {
       setIsSubmitting(false);
     }
