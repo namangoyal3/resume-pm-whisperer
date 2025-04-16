@@ -37,16 +37,7 @@ export const HomePage: React.FC<HomePageProps> = ({ onGetStarted }) => {
     },
   ];
 
-  const companies = [
-    { name: "Google", color: "bg-google-blue", textColor: "text-white" },
-    { name: "Amazon", color: "bg-orange-500", textColor: "text-white" },
-    { name: "Apple", color: "bg-gray-800", textColor: "text-white" },
-    { name: "Meta", color: "bg-blue-600", textColor: "text-white" },
-    { name: "Netflix", color: "bg-red-600", textColor: "text-white" },
-    { name: "Microsoft", color: "bg-blue-500", textColor: "text-white" },
-    { name: "Uber", color: "bg-black", textColor: "text-white" },
-    { name: "Airbnb", color: "bg-pink-500", textColor: "text-white" },
-  ];
+  const companies = ["Google", "Amazon", "Apple", "Meta", "Netflix"];
   
   const features = [
     {
@@ -102,23 +93,6 @@ export const HomePage: React.FC<HomePageProps> = ({ onGetStarted }) => {
         </motion.div>
       </section>
 
-      {/* Brand Logos Banner */}
-      <section className="py-8 bg-white rounded-xl shadow-sm">
-        <div className="text-center mb-4">
-          <h3 className="text-xl font-semibold text-gray-800">Trusted by Product Managers at Top Companies</h3>
-        </div>
-        <div className="flex flex-wrap justify-center gap-4 md:gap-6 items-center max-w-5xl mx-auto px-4">
-          {companies.map((company, index) => (
-            <div 
-              key={index} 
-              className={`${company.color} ${company.textColor} px-4 py-2 rounded-full font-medium text-sm md:text-base transition-transform hover:scale-105 shadow-sm`}
-            >
-              {company.name}
-            </div>
-          ))}
-        </div>
-      </section>
-
       {/* USP Section */}
       <section className="py-12">
         <div className="text-center mb-12">
@@ -168,14 +142,13 @@ export const HomePage: React.FC<HomePageProps> = ({ onGetStarted }) => {
       {/* Expert Companies */}
       <section className="py-12">
         <h2 className="text-3xl font-bold text-center mb-8">Our Experts Come From Top Tech Companies</h2>
-        <div className="flex flex-wrap justify-center gap-6 md:gap-8">
-          {companies.slice(0, 6).map((company, index) => (
-            <div key={index} className="flex flex-col items-center group">
-              <div className={`w-20 h-20 md:w-24 md:h-24 ${company.color} ${company.textColor} shadow-lg rounded-full flex items-center justify-center transition-all duration-300 group-hover:shadow-xl`}>
-                <p className="text-lg md:text-xl font-bold">{company.name.substring(0, 1)}</p>
+        <div className="flex flex-wrap justify-center gap-8">
+          {companies.map((company) => (
+            <div key={company} className="flex flex-col items-center group">
+              <div className="w-24 h-24 bg-white shadow-lg rounded-full flex items-center justify-center transition-all duration-300 group-hover:shadow-xl group-hover:bg-blue-50">
+                <p className="text-xl font-bold text-google-blue">{company}</p>
               </div>
-              <p className="mt-3 font-medium text-sm md:text-base">{company.name}</p>
-              <p className="text-xs text-gray-500">15+ Years</p>
+              <p className="mt-3 font-medium">15+ Years</p>
             </div>
           ))}
         </div>
@@ -217,23 +190,6 @@ export const HomePage: React.FC<HomePageProps> = ({ onGetStarted }) => {
           <ArrowRight className="w-5 h-5 ml-2 group-hover:translate-x-1 transition-transform" />
         </Button>
         <p className="text-sm text-blue-100">No credit card required</p>
-      </section>
-
-      {/* Brands Trust Banner */}
-      <section className="py-8 bg-gray-50 rounded-lg">
-        <div className="text-center mb-6">
-          <p className="text-sm uppercase tracking-wider text-gray-500 font-medium">Top Tech Companies Who Trust Our Experts</p>
-        </div>
-        <div className="flex flex-wrap justify-center items-center gap-8 md:gap-12 max-w-5xl mx-auto px-4">
-          {companies.map((company, index) => (
-            <div key={index} className="text-center">
-              <div className={`inline-block ${company.color} ${company.textColor} w-16 h-16 rounded-lg flex items-center justify-center shadow-sm font-bold text-xl`}>
-                {company.name.substring(0, 1)}
-              </div>
-              <p className="mt-2 text-xs font-medium text-gray-600">{company.name}</p>
-            </div>
-          ))}
-        </div>
       </section>
     </div>
   );
