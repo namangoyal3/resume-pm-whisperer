@@ -1,11 +1,13 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import { ResumeScanner } from '@/components/ResumeScanner';
 import { KeywordAnalysis } from '@/components/KeywordAnalysis';
 import { ScoreCircle } from '@/components/ScoreCircle';
 import { Button } from "@/components/ui/button";
 import { Separator } from '@/components/ui/separator';
 import { useToast } from "@/components/ui/use-toast";
+import { saveResumeAnalysis } from '@/services/googleSheets';
+import { Loader2 } from 'lucide-react';
 
 interface ResultsDashboardProps {
   atsScore: number;
@@ -13,6 +15,7 @@ interface ResultsDashboardProps {
   contentScore: number;
   overallScore: number;
   jobDescription: string;
+  resumeFileName?: string;
   onReset: () => void;
 }
 
@@ -22,9 +25,51 @@ export const ResultsDashboard: React.FC<ResultsDashboardProps> = ({
   contentScore,
   overallScore,
   jobDescription,
+  resumeFileName = "resume.pdf",
   onReset
 }) => {
   const { toast } = useToast();
+  const [isSaving, setIsSaving] = useState(false);
+
+  const handleSaveRecommendations = async () => {
+    setIsSaving(true);
+    try {
+      await saveResumeAnalysis({
+        timestamp: new Date().toISOString(),
+        fileName: resumeFileName,
+        atsScore,
+        keywordScore,
+        contentScore,
+        overallScore,
+        jobTitle: extractJobTitle(jobDescription),
+      });
+      
+      toast({
+        title: "Data Saved to Google Sheets",
+        description: "Your resume analysis has been successfully saved to Google Sheets."
+      });
+    } catch (error) {
+      console.error('Error saving analysis:', error);
+      toast({
+        title: "Error Saving Data",
+        description: "Failed to save your analysis. Please try again.",
+        variant: "destructive"
+      });
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  // Extract job title from job description (simple implementation)
+  const extractJobTitle = (description: string): string => {
+    // Look for common job title patterns in the first few sentences
+    const firstParagraph = description.split('\n')[0].trim();
+    const jobTitleMatch = firstParagraph.match(/job title:?\s*([^.,:;]+)/i) || 
+                          firstParagraph.match(/position:?\s*([^.,:;]+)/i) ||
+                          firstParagraph.match(/^([^.,:;]{3,50})$/i);
+    
+    return jobTitleMatch ? jobTitleMatch[1].trim() : "Not specified";
+  };
 
   return (
     <div className="space-y-6">
@@ -73,14 +118,17 @@ export const ResultsDashboard: React.FC<ResultsDashboardProps> = ({
         </Button>
         <Button 
           className="bg-google-blue hover:bg-blue-600"
-          onClick={() => {
-            toast({
-              title: "Recommendations Saved",
-              description: "Your recommendations have been saved successfully."
-            });
-          }}
+          onClick={handleSaveRecommendations}
+          disabled={isSaving}
         >
-          Save Recommendations
+          {isSaving ? (
+            <>
+              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              Saving...
+            </>
+          ) : (
+            "Save to Google Sheets"
+          )}
         </Button>
       </div>
     </div>

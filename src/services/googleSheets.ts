@@ -1,10 +1,8 @@
 
 import { createClient } from '@supabase/supabase-js';
 
-const supabase = createClient(
-  import.meta.env.VITE_SUPABASE_URL,
-  import.meta.env.VITE_SUPABASE_ANON_KEY
-);
+// Google Sheets Web App URL from deployment
+const GOOGLE_SHEETS_WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbwEhjFJn-JQzea70WE0TGP0zzPQUcPEihKV7qUc8Tl2ofeBxNR7yDPfmzaXIH2yyaVULg/exec';
 
 interface ResumeSubmission {
   timestamp: string;
@@ -13,17 +11,25 @@ interface ResumeSubmission {
   keywordScore: number;
   contentScore: number;
   overallScore: number;
+  jobTitle?: string;
 }
 
 export const saveResumeAnalysis = async (data: ResumeSubmission) => {
   try {
-    const { data: response, error } = await supabase
-      .functions.invoke('google-sheets-save', {
-        body: { data },
-      });
+    const response = await fetch(GOOGLE_SHEETS_WEB_APP_URL, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(data),
+    });
 
-    if (error) throw error;
-    return response;
+    if (!response.ok) {
+      throw new Error('Failed to save data to Google Sheets');
+    }
+
+    const result = await response.json();
+    return result;
   } catch (error) {
     console.error('Error saving to Google Sheets:', error);
     throw error;

@@ -108,6 +108,7 @@ const Index = () => {
                 contentScore={contentScore}
                 overallScore={overallScore}
                 jobDescription={jobDescription}
+                resumeFileName={resumeFile?.name}
                 onReset={handleReset}
               />
             )}
