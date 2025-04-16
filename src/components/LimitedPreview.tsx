@@ -6,6 +6,7 @@ import { ScoreCircle } from '@/components/ScoreCircle';
 import { Progress } from "@/components/ui/progress";
 import { Lock, AlertTriangle, CheckCircle, ArrowRight, User } from 'lucide-react';
 import { Separator } from '@/components/ui/separator';
+import { useIsMobile } from "@/hooks/use-mobile";
 
 interface LimitedPreviewProps {
   atsScore: number;
@@ -24,6 +25,8 @@ export const LimitedPreview: React.FC<LimitedPreviewProps> = ({
   expertName,
   onUnlock
 }) => {
+  const isMobile = useIsMobile();
+  
   return (
     <div className="space-y-8">
       <div className="text-center max-w-3xl mx-auto mb-6">
@@ -39,9 +42,9 @@ export const LimitedPreview: React.FC<LimitedPreviewProps> = ({
       
       <div className="relative">
         <div className="absolute inset-0 flex items-center justify-center z-10 pointer-events-none">
-          <div className="bg-black bg-opacity-40 backdrop-blur-sm p-8 rounded-xl flex flex-col items-center shadow-xl">
-            <Lock className="h-12 w-12 text-white mb-4" />
-            <h2 className="text-white text-2xl font-bold mb-2">Unlock Full Analysis</h2>
+          <div className={`bg-black bg-opacity-40 backdrop-blur-sm ${isMobile ? 'p-4' : 'p-8'} rounded-xl flex flex-col items-center shadow-xl ${isMobile ? 'w-11/12' : 'max-w-2xl'}`}>
+            <Lock className={`${isMobile ? 'h-8 w-8' : 'h-12 w-12'} text-white mb-4`} />
+            <h2 className={`text-white ${isMobile ? 'text-xl' : 'text-2xl'} font-bold mb-2`}>Unlock Full Analysis</h2>
             <p className="text-gray-200 text-center max-w-md mb-6">
               Complete your profile to unlock detailed expert feedback and recommendations.
             </p>
@@ -56,7 +59,7 @@ export const LimitedPreview: React.FC<LimitedPreviewProps> = ({
         </div>
         
         <div className="filter blur-sm">
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+          <div className={`grid grid-cols-1 ${isMobile ? 'sm:grid-cols-2' : 'md:grid-cols-4'} gap-6 mb-8`}>
             <ScoreCircle 
               score={overallScore} 
               title="Overall Score" 
@@ -122,7 +125,7 @@ export const LimitedPreview: React.FC<LimitedPreviewProps> = ({
                 </div>
                 <Progress value={keywordScore} className="h-2" />
                 
-                <div className="grid grid-cols-2 gap-4">
+                <div className={`grid ${isMobile ? 'grid-cols-1 gap-3' : 'grid-cols-2 gap-4'}`}>
                   <div className="p-4 bg-green-50 rounded-md border border-green-100">
                     <h4 className="font-medium flex items-center">
                       <CheckCircle className="h-4 w-4 text-google-green mr-2" />
@@ -171,7 +174,7 @@ export const LimitedPreview: React.FC<LimitedPreviewProps> = ({
       <div className="flex justify-center mt-10">
         <Button 
           onClick={onUnlock}
-          className="px-8 py-6 text-lg bg-google-blue hover:bg-blue-600"
+          className={`${isMobile ? 'px-6 py-4 text-base' : 'px-8 py-6 text-lg'} bg-google-blue hover:bg-blue-600`}
         >
           Complete Profile to Unlock Full Analysis
           <ArrowRight className="ml-2 h-5 w-5" />

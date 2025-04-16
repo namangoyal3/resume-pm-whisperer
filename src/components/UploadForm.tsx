@@ -8,6 +8,7 @@ import { FileText, ArrowRight, CheckCircle, TargetIcon, Briefcase, Building } fr
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 interface UploadFormProps {
   jobDescription: string;
@@ -26,6 +27,8 @@ export const UploadForm: React.FC<UploadFormProps> = ({
   isAnalyzing,
   onNext
 }) => {
+  const isMobile = useIsMobile();
+  
   const formatFilename = (name: string) => {
     if (name.length > 25) {
       return name.substring(0, 22) + '...';
@@ -34,7 +37,7 @@ export const UploadForm: React.FC<UploadFormProps> = ({
   };
 
   return (
-    <div className="space-y-10">
+    <div className="space-y-8">
       <div className="text-center max-w-3xl mx-auto mb-8">
         <h1 className="text-3xl font-bold mb-3">Upload Your Resume</h1>
         <p className="text-gray-600">
@@ -125,7 +128,7 @@ export const UploadForm: React.FC<UploadFormProps> = ({
         <Button 
           onClick={onNext} 
           disabled={isAnalyzing || !resumeFile || !jobDescription.trim()}
-          className="px-8 py-6 text-lg bg-google-blue hover:bg-blue-600"
+          className={`${isMobile ? 'px-6 py-4' : 'px-8 py-6'} text-lg bg-google-blue hover:bg-blue-600`}
         >
           Next: Select Expert
           <ArrowRight className="ml-2 h-5 w-5" />

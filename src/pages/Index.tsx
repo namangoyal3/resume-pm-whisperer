@@ -11,9 +11,11 @@ import { HomePage } from '@/components/HomePage';
 import { ExpertGallery } from '@/components/ExpertGallery';
 import { LeadForm } from '@/components/LeadForm';
 import { LimitedPreview } from '@/components/LimitedPreview';
+import { useIsMobile } from "@/hooks/use-mobile";
 
 const Index = () => {
   const { toast } = useToast();
+  const isMobile = useIsMobile();
   const [resumeFile, setResumeFile] = useState<File | null>(null);
   const [jobDescription, setJobDescription] = useState('');
   const [isAnalyzing, setIsAnalyzing] = useState(false);
@@ -104,24 +106,32 @@ const Index = () => {
       
       <main className="container mx-auto px-4 py-8">
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-8">
-          <TabsList className="grid w-full grid-cols-5">
+          <TabsList className={`grid w-full ${isMobile ? 'grid-cols-3' : 'grid-cols-5'}`}>
             <TabsTrigger value="home" disabled={isAnalyzing}>
               Home
             </TabsTrigger>
             <TabsTrigger value="upload" disabled={isAnalyzing}>
               <Upload className="w-4 h-4 mr-2" />
-              Upload Resume
+              {!isMobile && "Upload Resume"}
             </TabsTrigger>
             <TabsTrigger value="experts" disabled={isAnalyzing || !resumeFile}>
-              Select Expert
+              {!isMobile && "Select "}Expert
             </TabsTrigger>
-            <TabsTrigger value="preview" disabled={atsScore === 0}>
-              <FileText className="w-4 h-4 mr-2" />
-              Preview Analysis
-            </TabsTrigger>
-            <TabsTrigger value="results" disabled={!leadSubmitted}>
-              Full Feedback
-            </TabsTrigger>
+            {isMobile ? (
+              <TabsTrigger value="preview" disabled={atsScore === 0}>
+                Preview
+              </TabsTrigger>
+            ) : (
+              <TabsTrigger value="preview" disabled={atsScore === 0}>
+                <FileText className="w-4 h-4 mr-2" />
+                Preview Analysis
+              </TabsTrigger>
+            )}
+            {!isMobile && (
+              <TabsTrigger value="results" disabled={!leadSubmitted}>
+                Full Feedback
+              </TabsTrigger>
+            )}
           </TabsList>
           
           <TabsContent value="home">
@@ -169,7 +179,7 @@ const Index = () => {
           </TabsContent>
           
           <TabsContent value="results">
-            {leadSubmitted && (
+            {leadSubmitted ? (
               <ResultsDashboard 
                 atsScore={atsScore}
                 keywordScore={keywordScore}
@@ -180,6 +190,16 @@ const Index = () => {
                 onReset={handleReset}
                 expertName={selectedExpert || ""}
               />
+            ) : (
+              <div className="flex flex-col items-center justify-center min-h-[400px] text-center">
+                <h2 className="text-2xl font-bold mb-4">Access Restricted</h2>
+                <p className="text-gray-600 mb-4">
+                  Please complete your profile to access the full expert analysis of your resume.
+                </p>
+                <Button onClick={() => setActiveTab('lead')} className="bg-google-blue hover:bg-blue-600">
+                  Complete Your Profile
+                </Button>
+              </div>
             )}
           </TabsContent>
         </Tabs>

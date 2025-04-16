@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { ArrowRight, Filter, Loader2, Briefcase, Star, CheckCircle } from 'lucide-react';
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 interface Expert {
   id: string;
@@ -32,73 +33,74 @@ export const ExpertGallery: React.FC<ExpertGalleryProps> = ({
   isAnalyzing 
 }) => {
   const [activeFilter, setActiveFilter] = useState('all');
+  const isMobile = useIsMobile();
   
   const experts: Expert[] = [
     {
-      id: "jennifer-kim",
-      name: "Jennifer Kim",
+      id: "alex-rivera",
+      name: "Alex Rivera",
       title: "Senior Product Manager",
       company: "Google",
       experience: 16,
       specialties: ["AI/ML", "Data Products", "Enterprise"],
       rating: 4.9,
       bio: "Former Senior PM at Google with over 16 years of experience leading product teams. Expertise in AI and machine learning products, having led teams that developed key Google Cloud ML services.",
-      imgUrl: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?q=80&w=250&auto=format&fit=crop"
+      imgUrl: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?q=80&w=250&auto=format&fit=crop"
     },
     {
-      id: "michael-patel",
-      name: "Michael Patel",
+      id: "raj-patel",
+      name: "Raj Patel",
       title: "Director of Product",
       company: "Amazon",
       experience: 18,
       specialties: ["E-commerce", "Consumer", "Mobile"],
       rating: 4.8,
       bio: "Former Director of Product at Amazon who led the development of several key features for Amazon's mobile shopping experience, focusing on conversion optimization and user engagement.",
-      imgUrl: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?q=80&w=250&auto=format&fit=crop"
+      imgUrl: "https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?q=80&w=250&auto=format&fit=crop"
     },
     {
-      id: "sarah-johnson",
-      name: "Sarah Johnson",
+      id: "emma-chen",
+      name: "Emma Chen",
       title: "Product Lead",
       company: "Meta",
       experience: 15,
       specialties: ["Social Media", "Growth", "B2C"],
       rating: 4.9,
       bio: "Former Product Lead at Meta where she scaled growth initiatives for Facebook Marketplace. Specializes in social products and user acquisition strategies that drove millions of new users.",
-      imgUrl: "https://images.unsplash.com/photo-1544005313-94ddf0286df2?q=80&w=250&auto=format&fit=crop"
+      imgUrl: "https://images.unsplash.com/photo-1580489944761-15a19d654956?q=80&w=250&auto=format&fit=crop"
     },
     {
-      id: "david-chen",
-      name: "David Chen",
+      id: "marcus-johnson",
+      name: "Marcus Johnson",
       title: "Principal PM",
       company: "Apple",
       experience: 17,
       specialties: ["Hardware/Software", "UX", "Luxury"],
       rating: 4.7,
-      bio: "Former Principal PM at Apple who worked on integrating hardware and software experiences. David brings deep expertise in creating premium product experiences with exceptional attention to detail.",
-      imgUrl: "https://images.unsplash.com/photo-1552374196-c4e7ffc6e126?q=80&w=250&auto=format&fit=crop"
+      bio: "Former Principal PM at Apple who worked on integrating hardware and software experiences. Marcus brings deep expertise in creating premium product experiences with exceptional attention to detail.",
+      imgUrl: "https://images.unsplash.com/photo-1531384441138-2736e62e0919?q=80&w=250&auto=format&fit=crop"
     },
     {
-      id: "lauren-taylor",
-      name: "Lauren Taylor",
+      id: "sophia-rodriguez",
+      name: "Sophia Rodriguez",
       title: "Senior PM",
       company: "Netflix",
       experience: 15,
       specialties: ["Entertainment", "Subscription", "Analytics"],
       rating: 4.8,
-      bio: "Former Senior PM at Netflix who led the development of content recommendation algorithms. Lauren specializes in data-driven product development and personalization strategies.",
-      imgUrl: "https://images.unsplash.com/photo-1567532939604-b6b5b0db2604?q=80&w=250&auto=format&fit=crop"
+      bio: "Former Senior PM at Netflix who led the development of content recommendation algorithms. Sophia specializes in data-driven product development and personalization strategies.",
+      imgUrl: "https://images.unsplash.com/photo-1487412720507-e7ab37603c6f?q=80&w=250&auto=format&fit=crop"
     },
     {
-      id: "james-wilson",
-      name: "James Wilson",
+      id: "noah-kim",
+      name: "Noah Kim",
       title: "Group Product Manager",
       company: "Google",
       experience: 20,
       specialties: ["Search", "Ads", "B2B"],
       rating: 4.9,
-      bio: "Former Group Product Manager at Google with 20 years of experience leading search and advertising products. James specializes in helping candidates position themselves for technical PM roles.",
-      imgUrl: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?q=80&w=250&auto=format&fit=crop"
+      bio: "Former Group Product Manager at Google with 20 years of experience leading search and advertising products. Noah specializes in helping candidates position themselves for technical PM roles.",
+      imgUrl: "https://images.unsplash.com/photo-1492562080023-ab3db95bfbce?q=80&w=250&auto=format&fit=crop"
     }
   ];
 
@@ -107,7 +109,7 @@ export const ExpertGallery: React.FC<ExpertGalleryProps> = ({
     : experts.filter(expert => expert.company.toLowerCase() === activeFilter);
 
   return (
-    <div className="space-y-10">
+    <div className="space-y-8">
       <div className="text-center max-w-3xl mx-auto mb-8">
         <h1 className="text-3xl font-bold mb-3">Select Your Expert Reviewer</h1>
         <p className="text-gray-600">
@@ -115,15 +117,27 @@ export const ExpertGallery: React.FC<ExpertGalleryProps> = ({
         </p>
       </div>
       
-      <div className="flex justify-center mb-8">
+      <div className="flex justify-center mb-8 overflow-x-auto">
         <Tabs defaultValue="all" value={activeFilter} onValueChange={setActiveFilter}>
-          <TabsList className="grid grid-cols-6 w-full max-w-2xl">
+          <TabsList className={`grid ${isMobile ? 'grid-cols-3' : 'grid-cols-6'} w-full max-w-2xl ${isMobile ? 'mb-2' : ''}`}>
             <TabsTrigger value="all">All</TabsTrigger>
             <TabsTrigger value="google">Google</TabsTrigger>
             <TabsTrigger value="amazon">Amazon</TabsTrigger>
-            <TabsTrigger value="apple">Apple</TabsTrigger>
-            <TabsTrigger value="meta">Meta</TabsTrigger>
-            <TabsTrigger value="netflix">Netflix</TabsTrigger>
+            {isMobile ? (
+              <TabsTrigger value="apple" className="mt-2">Apple</TabsTrigger>
+            ) : (
+              <TabsTrigger value="apple">Apple</TabsTrigger>
+            )}
+            {isMobile ? (
+              <TabsTrigger value="meta" className="mt-2">Meta</TabsTrigger>
+            ) : (
+              <TabsTrigger value="meta">Meta</TabsTrigger>
+            )}
+            {isMobile ? (
+              <TabsTrigger value="netflix" className="mt-2">Netflix</TabsTrigger>
+            ) : (
+              <TabsTrigger value="netflix">Netflix</TabsTrigger>
+            )}
           </TabsList>
         </Tabs>
       </div>
