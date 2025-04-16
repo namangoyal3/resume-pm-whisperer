@@ -23,6 +23,7 @@ export interface ResumeSubmission {
   budget?: string;
   additionalInfo?: string;
   expert?: string;
+  sendEmailFeedback?: boolean; // New field to indicate if feedback should be emailed
 }
 
 export const saveResumeAnalysis = async (data: ResumeSubmission) => {
@@ -62,6 +63,56 @@ export const saveResumeAnalysis = async (data: ResumeSubmission) => {
     return { success: true };
   } catch (error) {
     console.error('Error saving to Google Sheets:', error);
+    throw error;
+  }
+};
+
+// New function to send ATS feedback via email
+export const sendEmailFeedback = async (data: {
+  email: string;
+  name: string;
+  atsScore: number;
+  keywordScore: number;
+  contentScore: number;
+  overallScore: number;
+  resumeFileName: string;
+  jobTitle?: string;
+  expert?: string;
+}) => {
+  try {
+    // We'll use the same Google Sheets Web App URL since it can handle the email sending
+    // on the server side via Google Apps Script
+    console.log('Sending email feedback request:', data);
+    
+    const form = document.createElement('form');
+    form.method = 'POST';
+    form.action = GOOGLE_SHEETS_WEB_APP_URL;
+    form.target = '_blank';
+    form.style.display = 'none';
+    
+    // Add a special parameter to indicate this is an email request
+    const inputData = document.createElement('input');
+    inputData.type = 'hidden';
+    inputData.name = 'emailData';
+    inputData.value = JSON.stringify(data);
+    form.appendChild(inputData);
+    
+    // Add the form to the body
+    document.body.appendChild(form);
+    
+    // Submit the form
+    form.submit();
+    
+    // Clean up after submission
+    setTimeout(() => {
+      document.body.removeChild(form);
+    }, 1000);
+    
+    console.log('Email feedback request initiated');
+    
+    return { success: true };
+  } catch (error) {
+    console.error('Error sending email feedback:', error);
     throw error;
   }
 };

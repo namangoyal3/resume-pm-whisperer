@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -10,9 +11,10 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Separator } from '@/components/ui/separator';
 import { Textarea } from '@/components/ui/textarea';
 import { Progress } from '@/components/ui/progress';
-import { ArrowRight, Shield, Loader2 } from 'lucide-react';
-import { saveResumeAnalysis } from '@/services/googleSheets';
+import { ArrowRight, Shield, Loader2, Mail } from 'lucide-react';
+import { saveResumeAnalysis, sendEmailFeedback } from '@/services/googleSheets';
 import { useToast } from "@/components/ui/use-toast";
+import { Checkbox } from "@/components/ui/checkbox";
 
 const formSchema = z.object({
   name: z.string().min(2, { message: "Name must be at least 2 characters." }),
@@ -24,6 +26,7 @@ const formSchema = z.object({
   jobSearchTimeline: z.enum(["active", "1month", "3months", "6months", "exploring"]),
   budget: z.enum(["under500", "500to1000", "1000to2000", "over2000", "unsure"]),
   additionalInfo: z.string().optional(),
+  sendEmailFeedback: z.boolean().default(false),
 });
 
 interface LeadFormProps {
@@ -62,6 +65,7 @@ export const LeadForm: React.FC<LeadFormProps> = ({
       jobSearchTimeline: "exploring",
       budget: "unsure",
       additionalInfo: "",
+      sendEmailFeedback: false,
     },
   });
 
@@ -85,7 +89,8 @@ export const LeadForm: React.FC<LeadFormProps> = ({
         jobSearchTimeline: values.jobSearchTimeline,
         budget: values.budget,
         additionalInfo: values.additionalInfo || "Not provided",
-        expert: selectedExpert
+        expert: selectedExpert,
+        sendEmailFeedback: values.sendEmailFeedback
       };
       
       toast({
@@ -95,10 +100,32 @@ export const LeadForm: React.FC<LeadFormProps> = ({
       
       const result = await saveResumeAnalysis(submissionData);
       
+      // If requested, also send email feedback
+      if (values.sendEmailFeedback) {
+        toast({
+          title: "Preparing Email Feedback",
+          description: "We're also sending your ATS feedback to your email.",
+        });
+        
+        await sendEmailFeedback({
+          email: values.email,
+          name: values.name,
+          atsScore: atsScore,
+          keywordScore: keywordScore,
+          contentScore: contentScore,
+          overallScore: overallScore,
+          resumeFileName: resumeFileName || "resume.pdf",
+          jobTitle: values.currentRole,
+          expert: selectedExpert
+        });
+      }
+      
       if (result.success) {
         toast({
           title: "Profile Submitted Successfully",
-          description: "Your information has been saved. Unlocking your full analysis...",
+          description: values.sendEmailFeedback 
+            ? "Your information has been saved and the report will be emailed to you. Unlocking your full analysis..."
+            : "Your information has been saved. Unlocking your full analysis...",
         });
         
         onSubmit(values);
@@ -309,6 +336,30 @@ export const LeadForm: React.FC<LeadFormProps> = ({
                       />
                     </FormControl>
                     <FormMessage />
+                  </FormItem>
+                )}
+              />
+              
+              <FormField
+                control={form.control}
+                name="sendEmailFeedback"
+                render={({ field }) => (
+                  <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-md border p-4">
+                    <FormControl>
+                      <Checkbox
+                        checked={field.value}
+                        onCheckedChange={field.onChange}
+                      />
+                    </FormControl>
+                    <div className="space-y-1 leading-none">
+                      <FormLabel className="flex items-center">
+                        <Mail className="h-4 w-4 mr-2 text-google-blue" />
+                        Email me my ATS feedback results
+                      </FormLabel>
+                      <FormDescription>
+                        We'll send a detailed report of your resume analysis to your email address.
+                      </FormDescription>
+                    </div>
                   </FormItem>
                 )}
               />
