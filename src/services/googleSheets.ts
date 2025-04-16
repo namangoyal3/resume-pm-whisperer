@@ -12,6 +12,17 @@ interface ResumeSubmission {
   contentScore: number;
   overallScore: number;
   jobTitle?: string;
+  // Lead information fields (optional)
+  name?: string;
+  email?: string;
+  phone?: string;
+  currentRole?: string;
+  targetCompanies?: string;
+  linkedIn?: string;
+  jobSearchTimeline?: string;
+  budget?: string;
+  additionalInfo?: string;
+  expert?: string;
 }
 
 export const saveResumeAnalysis = async (data: ResumeSubmission) => {

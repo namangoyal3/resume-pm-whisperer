@@ -4,8 +4,10 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Textarea } from "@/components/ui/textarea";
 import { FileUploader } from '@/components/FileUploader';
-import { FileText } from 'lucide-react';
-import { CheckCircle } from 'lucide-react';
+import { FileText, ArrowRight, CheckCircle, TargetIcon, Briefcase, Building } from 'lucide-react';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 
 interface UploadFormProps {
   jobDescription: string;
@@ -13,7 +15,7 @@ interface UploadFormProps {
   onFileUpload: (file: File) => void;
   resumeFile: File | null;
   isAnalyzing: boolean;
-  onAnalyze: () => void;
+  onNext: () => void;
 }
 
 export const UploadForm: React.FC<UploadFormProps> = ({
@@ -22,7 +24,7 @@ export const UploadForm: React.FC<UploadFormProps> = ({
   onFileUpload,
   resumeFile,
   isAnalyzing,
-  onAnalyze
+  onNext
 }) => {
   const formatFilename = (name: string) => {
     if (name.length > 25) {
@@ -32,8 +34,15 @@ export const UploadForm: React.FC<UploadFormProps> = ({
   };
 
   return (
-    <div className="space-y-6">
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+    <div className="space-y-10">
+      <div className="text-center max-w-3xl mx-auto mb-8">
+        <h1 className="text-3xl font-bold mb-3">Upload Your Resume</h1>
+        <p className="text-gray-600">
+          Upload your resume and provide details about the role you're targeting to get personalized expert feedback.
+        </p>
+      </div>
+      
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center">
@@ -59,31 +68,67 @@ export const UploadForm: React.FC<UploadFormProps> = ({
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center">
-              <FileText className="w-5 h-5 mr-2 text-google-blue" />
-              Job Description
+              <Briefcase className="w-5 h-5 mr-2 text-google-blue" />
+              Target Position Details
             </CardTitle>
             <CardDescription>
-              Paste the job description for keyword analysis
+              Tell us about the role you're applying for
             </CardDescription>
           </CardHeader>
-          <CardContent>
-            <Textarea 
-              placeholder="Paste the full job description here..."
-              className="min-h-[200px]"
-              value={jobDescription}
-              onChange={(e) => onJobDescriptionChange(e.target.value)}
-            />
+          <CardContent className="space-y-6">
+            <div className="space-y-2">
+              <Label htmlFor="role">Target Role</Label>
+              <Input id="role" placeholder="e.g. Senior Product Manager" />
+            </div>
+            
+            <div className="space-y-2">
+              <Label htmlFor="industry">Industry</Label>
+              <Select>
+                <SelectTrigger>
+                  <SelectValue placeholder="Select industry" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="tech">Technology</SelectItem>
+                  <SelectItem value="finance">Finance</SelectItem>
+                  <SelectItem value="healthcare">Healthcare</SelectItem>
+                  <SelectItem value="retail">Retail</SelectItem>
+                  <SelectItem value="manufacturing">Manufacturing</SelectItem>
+                  <SelectItem value="other">Other</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            
+            <div className="space-y-2">
+              <Label htmlFor="jobDescription">Job Description</Label>
+              <Textarea 
+                id="jobDescription"
+                placeholder="Paste the full job description here..."
+                className="min-h-[150px]"
+                value={jobDescription}
+                onChange={(e) => onJobDescriptionChange(e.target.value)}
+              />
+            </div>
+            
+            <div className="space-y-2">
+              <Label htmlFor="concerns">Specific Concerns (Optional)</Label>
+              <Textarea 
+                id="concerns"
+                placeholder="Any specific areas you'd like the expert to focus on?"
+                className="min-h-[100px]"
+              />
+            </div>
           </CardContent>
         </Card>
       </div>
       
       <div className="flex justify-center">
         <Button 
-          onClick={onAnalyze} 
-          disabled={isAnalyzing || !resumeFile}
+          onClick={onNext} 
+          disabled={isAnalyzing || !resumeFile || !jobDescription.trim()}
           className="px-8 py-6 text-lg bg-google-blue hover:bg-blue-600"
         >
-          {isAnalyzing ? "Analyzing..." : "Analyze Resume"}
+          Next: Select Expert
+          <ArrowRight className="ml-2 h-5 w-5" />
         </Button>
       </div>
     </div>
