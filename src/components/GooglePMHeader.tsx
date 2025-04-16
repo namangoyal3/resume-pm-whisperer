@@ -51,6 +51,57 @@ export const GooglePMHeader = () => {
             </div>
           </div>
         </div>
+        
+        {/* Brand Logos Section */}
+        <div className="mt-4 pt-3 border-t border-gray-100">
+          <div className="flex flex-wrap justify-center items-center gap-4 md:gap-8">
+            <p className="text-xs text-gray-500 w-full text-center md:w-auto">Trusted by professionals from:</p>
+            
+            <div className="flex items-center justify-center space-x-8 flex-wrap">
+              <div className="flex flex-col items-center">
+                <div className="w-8 h-8 md:w-10 md:h-10 bg-blue-50 rounded-full flex items-center justify-center">
+                  <span className="text-google-blue font-bold text-sm md:text-base">G</span>
+                </div>
+                <span className="text-xs mt-1 text-gray-600">Google</span>
+              </div>
+              
+              <div className="flex flex-col items-center">
+                <div className="w-8 h-8 md:w-10 md:h-10 bg-orange-50 rounded-full flex items-center justify-center">
+                  <span className="text-orange-500 font-bold text-sm md:text-base">A</span>
+                </div>
+                <span className="text-xs mt-1 text-gray-600">Amazon</span>
+              </div>
+              
+              <div className="flex flex-col items-center">
+                <div className="w-8 h-8 md:w-10 md:h-10 bg-blue-50 rounded-full flex items-center justify-center">
+                  <span className="text-blue-500 font-bold text-sm md:text-base">M</span>
+                </div>
+                <span className="text-xs mt-1 text-gray-600">Meta</span>
+              </div>
+              
+              <div className="flex flex-col items-center">
+                <div className="w-8 h-8 md:w-10 md:h-10 bg-gray-50 rounded-full flex items-center justify-center">
+                  <span className="text-gray-700 font-bold text-sm md:text-base">A</span>
+                </div>
+                <span className="text-xs mt-1 text-gray-600">Apple</span>
+              </div>
+              
+              <div className="flex flex-col items-center">
+                <div className="w-8 h-8 md:w-10 md:h-10 bg-red-50 rounded-full flex items-center justify-center">
+                  <span className="text-red-600 font-bold text-sm md:text-base">N</span>
+                </div>
+                <span className="text-xs mt-1 text-gray-600">Netflix</span>
+              </div>
+              
+              <div className="flex flex-col items-center">
+                <div className="w-8 h-8 md:w-10 md:h-10 bg-blue-50 rounded-full flex items-center justify-center">
+                  <span className="text-blue-700 font-bold text-sm md:text-base">MS</span>
+                </div>
+                <span className="text-xs mt-1 text-gray-600">Microsoft</span>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
     </header>
   );
