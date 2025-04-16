@@ -32,13 +32,21 @@ interface LeadFormProps {
   resumeFileName?: string;
   jobDescription: string;
   selectedExpert: string;
+  atsScore?: number;
+  keywordScore?: number;
+  contentScore?: number;
+  overallScore?: number;
 }
 
 export const LeadForm: React.FC<LeadFormProps> = ({ 
   onSubmit,
   resumeFileName,
   jobDescription,
-  selectedExpert
+  selectedExpert,
+  atsScore = 0,
+  keywordScore = 0,
+  contentScore = 0,
+  overallScore = 0
 }) => {
   const { toast } = useToast();
   const [isSubmitting, setIsSubmitting] = React.useState(false);
@@ -61,19 +69,20 @@ export const LeadForm: React.FC<LeadFormProps> = ({
   const handleFormSubmit = async (values: z.infer<typeof formSchema>) => {
     setIsSubmitting(true);
     try {
-      // First, save form data to Google Sheets 
+      // First, save form data to Google Sheets with all the scores
       await saveResumeAnalysis({
         timestamp: new Date().toISOString(),
         fileName: resumeFileName || "resume.pdf",
-        atsScore: 0,  // These will be updated with actual values in the Results component
-        keywordScore: 0,
-        contentScore: 0,
-        overallScore: 0,
+        atsScore: atsScore, 
+        keywordScore: keywordScore,
+        contentScore: contentScore,
+        overallScore: overallScore,
         jobTitle: values.currentRole,
         // Add lead information
         name: values.name,
         email: values.email,
         phone: values.phone,
+        currentRole: values.currentRole,
         targetCompanies: values.targetCompanies,
         linkedIn: values.linkedIn || "Not provided",
         jobSearchTimeline: values.jobSearchTimeline,

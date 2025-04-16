@@ -2,7 +2,7 @@
 import { useState } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/components/ui/use-toast";
-import { Button } from "@/components/ui/button"; // Added missing Button import
+import { Button } from "@/components/ui/button";
 import { GooglePMHeader } from '@/components/GooglePMHeader';
 import { analyzeResume } from '@/services/uploadService';
 import { Upload, FileText } from 'lucide-react';
@@ -176,6 +176,10 @@ const Index = () => {
               resumeFileName={resumeFile?.name}
               jobDescription={jobDescription}
               selectedExpert={selectedExpert || ""}
+              atsScore={atsScore}
+              keywordScore={keywordScore}
+              contentScore={contentScore}
+              overallScore={overallScore}
             />
           </TabsContent>
           
