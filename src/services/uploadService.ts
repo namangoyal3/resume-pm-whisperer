@@ -1,4 +1,6 @@
 
+import { getGrokChatCompletion, GrokMessage } from './grokApi';
+
 interface AnalysisResult {
   timestamp: string;
   fileName: string;
@@ -6,68 +8,111 @@ interface AnalysisResult {
   keywordScore: number;
   contentScore: number;
   overallScore: number;
+  feedback: string;
 }
 
-export const analyzeResume = async (file: File, jobDescription: string): Promise<AnalysisResult> => {
-  const formData = new FormData();
-  formData.append('file', file);
-  formData.append('jobDescription', jobDescription);
+/**
+ * Helper function to read a File as text.
+ */
+const readFileAsText = (file: File): Promise<string> => {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => {
+      if (typeof reader.result === 'string') {
+        resolve(reader.result);
+      } else {
+        reject(new Error('Failed to read file as text'));
+      }
+    };
+    reader.onerror = () => {
+      reject(new Error('Error reading file'));
+    };
+    reader.readAsText(file);
+  });
+};
 
-  try {
-    // For demo purposes, we're using a simulated response
-    // In production, replace this with the actual API call:
-    // const response = await fetch('https://kiknueebjtqoipkdjdnm.supabase.co/functions/v1/google-sheets-save', {
-    //   method: 'POST',
-    //   body: formData,
-    // });
-    
-    // Generate more realistic scores based on file type/name patterns
-    // to simulate varied feedback scenarios
-    const generateScore = (base: number, variance: number) => {
-      const randomVariance = Math.floor(Math.random() * variance) - (variance / 2);
-      return Math.max(40, Math.min(98, base + randomVariance));
-    };
-    
-    // Base scores slightly dependent on file properties to simulate
-    // different results for different files
-    let atsBase = 70;
-    let keywordBase = 65;
-    let contentBase = 72;
-    
-    // Adjust base scores based on filename patterns
-    if (file.name.toLowerCase().includes('ats')) {
-      atsBase += 15; // Files with "ATS" in the name get better ATS scores
-    }
-    
-    if (file.name.toLowerCase().includes('senior') || file.name.toLowerCase().includes('sr')) {
-      contentBase += 10; // Senior resumes tend to have better content
-    }
-    
-    if (file.name.toLowerCase().includes('product') || file.name.toLowerCase().includes('pm')) {
-      keywordBase += 12; // Product Manager specific resumes have better keyword matches
-    }
-    
-    // Add a small delay to simulate processing
-    await new Promise(resolve => setTimeout(resolve, 2000));
-    
-    const atsScore = generateScore(atsBase, 15);
-    const keywordScore = generateScore(keywordBase, 20);
-    const contentScore = generateScore(contentBase, 18);
-    
-    // Overall score is a weighted average with slight randomization
-    const rawOverallScore = (atsScore * 0.3) + (keywordScore * 0.4) + (contentScore * 0.3);
-    const overallScore = Math.floor(generateScore(rawOverallScore, 5));
-    
-    return {
-      timestamp: new Date().toISOString(),
-      fileName: file.name,
-      atsScore,
-      keywordScore,
-      contentScore,
-      overallScore
-    };
-  } catch (error) {
-    console.error('Error analyzing resume:', error);
-    throw error;
+/**
+ * Calls Grok API to analyze the resume against the job description and optional expert profile.
+ * @param file - The resume file uploaded by the user
+ * @param jobDescription - The job description text
+ * @param expertProfile - Optional selected expert name for personalized feedback
+ * @param apiKey - The Grok API key (should be stored securely / provided by user/session)
+ * @returns AnalysisResult with scores and feedback
+ */
+export const analyzeResume = async (
+  file: File,
+  jobDescription: string,
+  expertProfile?: string,
+  apiKey?: string
+): Promise<AnalysisResult> => {
+  if (!apiKey) {
+    throw new Error('Grok API key is required for resume analysis.');
   }
+
+  // Read resume file content as text
+  const resumeText = await readFileAsText(file);
+
+  // Prepare prompt messages for Grok API
+  const systemMessage: GrokMessage = {
+    role: 'system',
+    content: `You are an expert career advisor and resume reviewer AI. Analyze the resume compared to the job description and provide:
+1) ATS compatibility score (0-100),
+2) Keyword match score (0-100),
+3) Content quality score (0-100),
+4) Overall score (0-100),
+5) A concise expert feedback explaining the scores and suggesting improvements.
+
+Respond in JSON format with keys: atsScore, keywordScore, contentScore, overallScore, feedback.`
+  };
+
+  const userContent = `Resume content:
+${resumeText}
+
+Job description:
+${jobDescription}
+
+${expertProfile ? `Provide feedback as if you are the expert: ${expertProfile}.` : ''}
+
+Please reply only with the JSON object.`;
+
+  const userMessage: GrokMessage = {
+    role: 'user',
+    content: userContent,
+  };
+
+  const request = {
+    model: "gpt-4o-mini", // Assuming the model name for Grok API; adjust if needed
+    messages: [systemMessage, userMessage],
+    temperature: 0.3,
+    max_tokens: 1000,
+    top_p: 1,
+  };
+
+  const response = await getGrokChatCompletion(apiKey, request);
+
+  // Parse the content of the assistant's message (assumed to be JSON)
+  const content = response.choices[0]?.message?.content ?? "{}";
+  let parsed: any = {};
+  try {
+    parsed = JSON.parse(content);
+  } catch (err) {
+    throw new Error(`Failed to parse Grok API response JSON: ${err}`);
+  }
+
+  // Validate parsed keys and fallback to zeros if missing
+  const atsScore = typeof parsed.atsScore === 'number' ? parsed.atsScore : 0;
+  const keywordScore = typeof parsed.keywordScore === 'number' ? parsed.keywordScore : 0;
+  const contentScore = typeof parsed.contentScore === 'number' ? parsed.contentScore : 0;
+  const overallScore = typeof parsed.overallScore === 'number' ? parsed.overallScore : 0;
+  const feedback = typeof parsed.feedback === 'string' ? parsed.feedback : "";
+
+  return {
+    timestamp: new Date().toISOString(),
+    fileName: file.name,
+    atsScore,
+    keywordScore,
+    contentScore,
+    overallScore,
+    feedback,
+  };
 };
