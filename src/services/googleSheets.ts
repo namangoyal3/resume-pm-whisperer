@@ -91,6 +91,7 @@ export const sendEmailFeedback = async (data: {
     const iframe = document.createElement('iframe');
     iframe.style.display = 'none';
     document.body.appendChild(iframe);
+    iframe.name = 'email-submit-frame';
     
     // Use the iframe to submit the form
     const form = document.createElement('form');
@@ -109,7 +110,6 @@ export const sendEmailFeedback = async (data: {
     
     // Append form to document and submit
     document.body.appendChild(form);
-    iframe.name = 'email-submit-frame';
     form.submit();
     
     // Clean up the DOM after submission
@@ -126,4 +126,3 @@ export const sendEmailFeedback = async (data: {
     throw error;
   }
 };
-
