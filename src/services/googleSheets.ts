@@ -1,8 +1,8 @@
 
 import { createClient } from '@supabase/supabase-js';
 
-// Google Sheets Web App URL from deployment
-const GOOGLE_SHEETS_WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbwqhELI1OBpnhBvRklGnomrUYe8c-A9J3ym1dA7_N4X2Wa9vd3izFsFspbD5MMxeNSWzA/exec';
+// Updated Google Sheets Web App URL from deployment
+const GOOGLE_SHEETS_WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbzEsdbxcz2LnbWEkEk17dLW8U62P8ayMyd8HIHm12WSXgxIKvbScZLppRGfC5XjDaPJEg/exec';
 
 export interface ResumeSubmission {
   timestamp: string;
@@ -126,3 +126,4 @@ export const sendEmailFeedback = async (data: {
     throw error;
   }
 };
+
